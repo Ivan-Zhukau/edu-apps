@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%logger] (%thread) %msg%throwable%n"/>
+        </Console>
+        <RollingFile name="SystemDefaultFile" fileName="modern-java.log" filePattern="modern-java.log.%d{yyyy-MM-dd-HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%logger] (%thread) %msg%throwable%n" />
+            <DefaultRolloverStrategy max="10" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="SystemDefaultFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
