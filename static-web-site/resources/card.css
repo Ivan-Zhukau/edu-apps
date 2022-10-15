@@ -1,0 +1,82 @@
+.body{
+    height:1000px;
+    width:1200px;
+}
+.card{
+    width:100%;
+    height:100%;
+    position:relative;
+}
+.photo{
+    background-image:url(photo.gif);
+    border: 1px solid #452bc6;
+    border-radius: 50%; 
+    width:250px;
+    height:250px;
+    position: fixed;
+    top:5%;
+    left:5%;
+}
+.photo a{
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+.photo-facebook{
+    transform: rotate(60deg) translate(105px) rotate(-60deg);
+}
+.photo-twitter{
+    transform: rotate(230deg) translate(150px) rotate(-230deg);
+}
+.photo-pinterest{
+    transform: rotate(90deg) translate(105px) rotate(-90deg);
+}
+.photo-tumblr{
+    transform: rotate(30deg) translate(105px) rotate(-30deg);
+}
+.details-red{
+    background-color: #d8464c;
+    width: 550px;
+    height: 700px;
+    position: relative;
+    right:10px;
+    bottom:10px;
+}
+.details-dark-blue{
+    background-color: #364f86;
+    width: 550px;
+    height: 700px;
+    position: relative;
+    right:10px;
+    bottom:10px;
+}
+.details-blue{
+    margin: 200px 0px 0px 400px;
+    background-color: #0089b2;
+    width: 550px;
+    height: 700px;
+    position:relative;
+}
+.contact{
+    width: 450px;
+    height: 150px;
+    position: fixed;
+    bottom: 10%;
+    right: 50px;
+}
+.contact-background{
+    background-color: #343434;
+    width: 450px;
+    height: 150px;
+    opacity:0.5;
+    position:absolute;
+}
+.contact-logo{
+    background-color:#f7e35f;
+    width:90px;
+    height:90px;
+    position:relative;
+    top:30px;
+    left:30px;
+}
