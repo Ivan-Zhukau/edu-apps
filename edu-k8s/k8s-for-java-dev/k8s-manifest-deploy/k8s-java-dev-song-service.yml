@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: songs-back-service
+  namespace: k8s-java-dev
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    nodePort: 30080
+  selector:
+    app: songs-back
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: songs-back-deployment
+  namespace: k8s-java-dev
+  labels:
+    app: songs-back
+spec:
+  replicas: 3
+  selector:  
+    matchLabels:
+      app: songs-back
+  template:
+    metadata:
+      namespace: k8s-java-dev
+      labels:
+        app: songs-back
+    spec:
+      containers:
+        - name: microservice-intro-song-service
+          image: microservice-intro-song-service
+          ports:
+            - name: http
+              containerPort: 8080
+

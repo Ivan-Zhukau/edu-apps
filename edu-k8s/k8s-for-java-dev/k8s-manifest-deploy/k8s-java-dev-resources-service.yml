@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-back-service
+  namespace: k8s-java-dev
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    nodePort: 31080
+  selector:
+    app: resources-back
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resources-back-deployment
+  namespace: k8s-java-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resources-back
+  template:
+    metadata: 
+      name: resources-back
+      labels:
+        app: resources-back
+    spec:
+      containers:
+      - name: microservice-intro-resource-service
+        image: microservice-intro-resource-service
+        ports:
+          - name: http
+            containerPort: 8080
