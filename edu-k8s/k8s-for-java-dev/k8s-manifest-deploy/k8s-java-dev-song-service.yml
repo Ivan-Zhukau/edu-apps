@@ -35,6 +35,7 @@ spec:
       containers:
         - name: microservice-intro-song-service
           image: microservice-intro-song-service
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 8080

@@ -32,6 +32,7 @@ spec:
       containers:
       - name: microservice-intro-resource-service
         image: microservice-intro-resource-service
+        imagePullPolicy: IfNotPresent
         ports:
           - name: http
             containerPort: 8080
