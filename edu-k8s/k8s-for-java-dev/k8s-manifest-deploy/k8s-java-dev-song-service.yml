@@ -39,4 +39,6 @@ spec:
           ports:
             - name: http
               containerPort: 8080
-
+          env:
+          - name: SONGS_DB_URL
+            value: songs-service-db-postgres-service.k8s-java-dev.svc
