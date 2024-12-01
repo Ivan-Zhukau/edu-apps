@@ -36,3 +36,12 @@ spec:
         ports:
           - name: http
             containerPort: 8080
+        env: 
+          - name: RESOURCES_DB_URL
+            value: resources-service-db-postgres-service.k8s-java-dev.svc.cluster.local
+          - name: SONGS_MS_URL
+            value: songs-back-service.k8s-java-dev.svc.cluster.local
+          - name: SONGS_MS_PORT
+            value: "80"
+          - name: RESOURCES_DB_PORT
+            value: "5432" 

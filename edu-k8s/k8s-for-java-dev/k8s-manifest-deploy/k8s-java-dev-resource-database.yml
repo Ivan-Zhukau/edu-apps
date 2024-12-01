@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: songs-service-db-pvc
+  name: resources-service-db-pvc
   namespace: k8s-java-dev
 spec:
   storageClassName: manual
@@ -15,45 +15,50 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: songs-service-db-postgres-service
+  name: resources-service-db-postgres-service
   namespace: k8s-java-dev
   labels:
-    app: songs-service-db
+    app: resources-service-db
 spec: 
     type: NodePort
     ports:
       - port: 5432
-        targetPort: songs-db
-        nodePort: 30432
+        targetPort: resources-db
+        nodePort: 31432
     selector:
-      app: songs-service-db
+      app: resources-service-db
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: songs-service-db-postgres
+  name: resources-service-db-postgres
   namespace: k8s-java-dev
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: songs-service-db
+      app: resources-service-db
   template:
     metadata: 
       labels:
-        app: songs-service-db
+        app: resources-service-db
     spec:
       containers:
-      - name: songs-service-db
+      - name: resources-service-db
         image: 'postgres:latest'
         imagePullPolicy: IfNotPresent
         ports:
-          - name: songs-db
+          - name: resources-db
             containerPort: 5432
+        env:
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
         volumeMounts:
           - mountPath: /var/lib/postgresql/data
-            name: songs-service-db-postgresdata
+            name: resources-service-db-postgresdata
       volumes:
-        - name: songs-service-db-postgresdata
+        - name: resources-service-db-postgresdata
           persistentVolumeClaim:
-            claimName: songs-service-db-pvc
+            claimName: resources-service-db-pvc
