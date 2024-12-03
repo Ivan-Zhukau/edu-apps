@@ -60,7 +60,7 @@ spec:
         - mountPath: /docker-entrypoint-initdb.d
           name: songs-db-initdb
       volumes:
-        - name: songs-db-initdb
+      - name: songs-db-initdb
         configMap:
           name: songs-service-db-init-config
             

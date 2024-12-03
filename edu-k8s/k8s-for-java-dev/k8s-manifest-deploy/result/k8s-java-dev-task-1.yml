@@ -1,0 +1,282 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: java-dev-pv-01
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/java-dev-pv-01
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: java-dev-pv-02
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/java-dev-pv-02
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8s-java-dev
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: songs-service-db-init-config
+  namespace: k8s-java-dev
+data:
+  init.sql: |
+    ALTER USER postgres with encrypted password 'postgres';
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: songs-service-db-postgres-service
+  namespace: k8s-java-dev
+  labels:
+    app: songs-service-db
+spec:
+    clusterIP: None 
+    ports:
+      - port: 5432
+        targetPort: songs-db
+    selector:
+      app: songs-service-db
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: songs-service-db-postgres
+  namespace: k8s-java-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: songs-service-db
+  minReadySeconds: 2
+  template:
+    metadata: 
+      labels:
+        app: songs-service-db
+    spec:
+      containers:
+      - name: songs-service-db
+        image: 'postgres:latest'
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: songs-db
+            containerPort: 5432
+        env:
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_DB
+          value: postgres
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: songs-db-postgresdata
+        - mountPath: /docker-entrypoint-initdb.d
+          name: songs-db-initdb
+      volumes:
+      - name: songs-db-initdb
+        configMap:
+          name: songs-service-db-init-config
+            
+  volumeClaimTemplates:
+    - metadata: 
+        name: songs-db-postgresdata
+        namespace: k8s-java-dev
+      spec: 
+        storageClassName: manual
+        resources:
+          requests:
+            storage: 2Gi
+        accessModes:
+        - ReadWriteOnce
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resources-service-db-init-config
+  namespace: k8s-java-dev
+data:
+  init.sql: |
+    ALTER USER postgres with encrypted password 'postgres';
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-service-db-postgres-service
+  namespace: k8s-java-dev
+  labels:
+    app: resources-service-db
+spec:
+    clusterIP: None 
+    ports:
+      - port: 5432
+        targetPort: resources-db
+    selector:
+      app: resources-service-db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: resources-service-db-postgres
+  namespace: k8s-java-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resources-service-db
+  template:
+    metadata: 
+      labels:
+        app: resources-service-db
+    spec:
+      containers:
+      - name: resources-service-db
+        image: 'postgres:latest'
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: resources-db
+            containerPort: 5432
+        env:
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: resources-service-db-postgresdata
+
+          - mountPath: /docker-entrypoint-initdb.d
+            name: resources-db-initdb
+      volumes:
+      - name: resources-db-initdb
+        configMap:
+          name: resources-service-db-init-config  
+  volumeClaimTemplates:
+  - metadata: 
+      name: resources-service-db-postgresdata
+      namespace: k8s-java-dev
+    spec:
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 2Gi
+      accessModes:
+      - ReadWriteOnce
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: songs-back-service
+  namespace: k8s-java-dev
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    nodePort: 30080
+  selector:
+    app: songs-back
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: songs-back-deployment
+  namespace: k8s-java-dev
+  labels:
+    app: songs-back
+spec:
+  replicas: 3
+  selector:  
+    matchLabels:
+      app: songs-back
+  template:
+    metadata:
+      namespace: k8s-java-dev
+      labels:
+        app: songs-back
+    spec:
+      containers:
+        - name: microservice-intro-song-service
+          image: microservice-intro-song-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+          - name: SONGS_DB_URL
+            value: songs-service-db-postgres-service.k8s-java-dev.svc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-back-service
+  namespace: k8s-java-dev
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    nodePort: 31080
+  selector:
+    app: resources-back
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resources-back-deployment
+  namespace: k8s-java-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resources-back
+  template:
+    metadata: 
+      name: resources-back
+      labels:
+        app: resources-back
+    spec:
+      containers:
+      - name: microservice-intro-resource-service
+        image: microservice-intro-resource-service
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: http
+            containerPort: 8080
+        env: 
+          - name: RESOURCES_DB_URL
+            value: resources-service-db-postgres-service.k8s-java-dev.svc.cluster.local
+          - name: SONGS_MS_URL
+            value: songs-back-service.k8s-java-dev.svc.cluster.local
+          - name: SONGS_MS_PORT
+            value: "80"
+          - name: RESOURCES_DB_PORT
+            value: "5432" 
+        
