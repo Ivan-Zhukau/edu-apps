@@ -7,24 +7,17 @@ data:
   init.sql: |
     ALTER USER postgres with encrypted password 'postgres';
 
-    CREATE TABLE song_metadata
-    (
-      id INTEGER NOT NULL,
-      name VARCHAR(255) NOT NULL,
-      artist VARCHAR(255) NOT NULL,
-      album VARCHAR(255),
-      duration VARCHAR(255),
-      year INT
-     );
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: songs-service-db-config
-  namespace: k8s-java-dev
-data:
-  POSTGRES_DB: postgres
+    create sequence songs_seq start with 1 increment by 50 ;
 
+    create table songs ( id integer not null,
+      resource_id integer not null unique,
+      album varchar(255),
+      artist varchar(255),
+      length varchar(255),
+      name varchar(255),
+      year varchar(255),
+      primary key (id)
+    );
 ---
 apiVersion: v1
 kind: Service
@@ -65,21 +58,34 @@ spec:
         ports:
           - name: songs-db
             containerPort: 5432
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$(songs.SONG_DB_USER)" -h 127.0.0.1 -p 5432
+          failureThreshold: 6
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
         env:
         - name: POSTGRES_PASSWORD
-          value: postgres
-        - name: POSTGRES_USER
-          value: postgres
-        - name: POSTGRES_DB
           valueFrom: 
-            configMapKeyRef:
-              name: songs-service-db-config
-              value: POSTGRES_DB
+            secretKeyRef:
+              name: k8s-java-dev-secrets
+              key: songs.SONG_DB_PASS
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: k8s-java-dev-secrets
+              key: songs.SONG_DB_USER
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: songs-db-postgresdata
         - mountPath: /docker-entrypoint-initdb.d
           name: songs-db-initdb
+          readOnly: true
       volumes:
       - name: songs-db-initdb
         configMap:

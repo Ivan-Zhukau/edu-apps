@@ -1,13 +1,4 @@
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: songs-service-config
-  namespace: k8s-java-dev
-data:
-  SONGS_DB_URL: songs-service-db-postgres-service.k8s-java-dev.svc
-
----
-apiVersion: v1
 kind: Service
 metadata:
   name: songs-back-service
@@ -16,7 +7,7 @@ spec:
   type: NodePort
   ports:
   - name: http
-    port: 80
+    port: 8080
     targetPort: http
     nodePort: 30080
   selector:
@@ -31,7 +22,7 @@ metadata:
   labels:
     app: songs-back
 spec:
-  replicas: 3
+  replicas: 2
   selector:  
     matchLabels:
       app: songs-back
@@ -45,9 +36,38 @@ spec:
         - name: microservice-intro-song-service
           image: microservice-intro-song-service
           imagePullPolicy: IfNotPresent
+          args: ["java", "-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "app.jar"]
           ports:
             - name: http
               containerPort: 8080
-          envFrom:
-          - configMapRef: 
-            name: songs-service-config
+            - name: java-debug
+              containerPort: 5005
+                #startupProbe:
+                #httpGet:
+                #path: /health/
+                #port: http     
+                #failureThreshold: 30
+                #periodSeconds: 10
+                #livenessProbe:
+                #httpGet:
+                #path: /health/
+                #port: http
+                #initialDelaySeconds: 15
+                #periodSeconds: 15
+                #readinessProbe:
+                #httpGet:
+                #path: /health/
+                #port: http
+                #initialDelaySeconds: 15
+                #periodSeconds: 15 
+          env:
+          - name: SONGS_DB_URL
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-config
+                key: songs.SONGS_DB_URL
+          - name: SONGS_MS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-config
+                key: songs.SONGS_MS_PORT

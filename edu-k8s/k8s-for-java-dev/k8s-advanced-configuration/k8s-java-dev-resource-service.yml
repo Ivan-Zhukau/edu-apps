@@ -1,15 +1,4 @@
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: resource-service-config
-  namespace: k8s-java-dev
-data:
-  RESOURCES_DB_URL: resources-service-db-postgres-service.k8s-java-dev.svc.cluster.local
-  SONGS_MS_URL: songs-back-service.k8s-java-dev.svc.cluster.local
-  SONGS_MS_PORT: "80"
-  RESOURCES_DB_PORT: "5432" 
----
-apiVersion: v1
 kind: Service
 metadata:
   name: resources-back-service
@@ -47,8 +36,42 @@ spec:
         ports:
           - name: http
             containerPort: 8080
-        envFrom:
-          configMapRef:
-            name: resource-service-config
-
-
+        startupProbe:
+          httpGet:
+            path: /health/
+            port: http
+          failureThreshold: 30
+          periodSeconds: 10              
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15    
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15    
+        env:
+          name: RESOURCES_DB_URL
+          valueFrom:
+            configMapKeyRef:
+              name: k8s-java-dev-config
+              key: resources.RESOURCES_DB_URL
+          name: RESOURCES_DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: k8s-java-dev-config
+              key: resources.RESOURCES_DB_PORT
+          name: SONGS_MS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: k8s-java-dev-config
+              key: resources.SONGS_MS_URL
+          name: SONGS_MS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: k8s-java-dev-config
+              key: resources.SONGS_MS_PORT
