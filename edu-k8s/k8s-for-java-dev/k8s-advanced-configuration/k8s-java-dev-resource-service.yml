@@ -36,42 +36,42 @@ spec:
         ports:
           - name: http
             containerPort: 8080
+        env:
+          - name: RESOURCES_DB_URL
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-config
+                key: resources.RESOURCES_DB_URL
+          - name: RESOURCES_DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-config
+                key: resources.RESOURCES_DB_PORT
+          - name: SONGS_MS_URL
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-config
+                key: resources.SONGS_MS_URL
+          - name: SONGS_MS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-config
+                key: resources.SONGS_MS_PORT
         startupProbe:
           httpGet:
-            path: /health/
+            path: /resources-ms/health
             port: http
-          failureThreshold: 30
-          periodSeconds: 10              
+          failureThreshold: 29
+          periodSeconds: 9
         livenessProbe:
           httpGet:
-            path: /health/
+            path: /resources-ms/health
             port: http
-          initialDelaySeconds: 15
-          periodSeconds: 15    
+          initialDelaySeconds: 14
+          periodSeconds: 14
         readinessProbe:
           httpGet:
-            path: /health/
+            path: /resources-ms/health
             port: http
-          initialDelaySeconds: 15
-          periodSeconds: 15    
-        env:
-          name: RESOURCES_DB_URL
-          valueFrom:
-            configMapKeyRef:
-              name: k8s-java-dev-config
-              key: resources.RESOURCES_DB_URL
-          name: RESOURCES_DB_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: k8s-java-dev-config
-              key: resources.RESOURCES_DB_PORT
-          name: SONGS_MS_URL
-          valueFrom:
-            configMapKeyRef:
-              name: k8s-java-dev-config
-              key: resources.SONGS_MS_URL
-          name: SONGS_MS_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: k8s-java-dev-config
-              key: resources.SONGS_MS_PORT
+          initialDelaySeconds: 14
+          periodSeconds: 14           

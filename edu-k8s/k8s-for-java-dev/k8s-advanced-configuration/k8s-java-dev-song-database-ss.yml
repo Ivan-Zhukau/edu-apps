@@ -5,8 +5,6 @@ metadata:
   namespace: k8s-java-dev
 data:
   init.sql: |
-    ALTER USER postgres with encrypted password 'postgres';
-
     create sequence songs_seq start with 1 increment by 50 ;
 
     create table songs ( id integer not null,
@@ -58,17 +56,6 @@ spec:
         ports:
           - name: songs-db
             containerPort: 5432
-        livenessProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - exec pg_isready -U "$(songs.SONG_DB_USER)" -h 127.0.0.1 -p 5432
-          failureThreshold: 6
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 5
         env:
         - name: POSTGRES_PASSWORD
           valueFrom: 
@@ -76,16 +63,30 @@ spec:
               name: k8s-java-dev-secrets
               key: songs.SONG_DB_PASS
         - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: k8s-java-dev-secrets
-              key: songs.SONG_DB_USER
+          value: postgres    
+        - name: POSTGRES_DB
+          value: postgres
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: songs-db-postgresdata
         - mountPath: /docker-entrypoint-initdb.d
           name: songs-db-initdb
           readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -h 127.0.0.1 -U postgres -p 5432
+          failureThreshold: 6
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          periodSeconds: 5            
       volumes:
       - name: songs-db-initdb
         configMap:
