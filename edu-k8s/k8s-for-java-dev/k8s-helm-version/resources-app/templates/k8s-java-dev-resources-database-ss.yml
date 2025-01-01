@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-service-db-postgres-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: resources-service-db
+spec:
+    clusterIP: None
+    ports:
+      - port: 5432
+        targetPort: resources-db
+    selector:
+      app: resources-service-db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: resources-service-db-postgres
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resources-service-db
+  template:
+    metadata:
+      labels:
+        app: resources-service-db
+    spec:
+      containers:
+      - name: resources-service-db
+        image: 'postgres:latest'
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: resources-db
+            containerPort: 5432
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: k8s-java-dev-resources-secrets
+              key: resources.RESOURCE_DB_PASS
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_DB
+          value: postgres
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: resources-db-postgresdata
+          - mountPath: /docker-entrypoint-initdb.d
+            name: resources-db-initdb
+            readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -h 127.0.0.1 -U postgres -p 5432
+          failureThreshold: 6
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          periodSeconds: 5
+      volumes:
+        - name: resources-db-initdb
+          configMap:
+            name: resources-service-db-init-config
+  volumeClaimTemplates:
+  - metadata:
+      name: resources-db-postgresdata
+      namespace: {{ .Values.global.namespace }}
+    spec:
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 2Gi
+      accessModes:
+      - ReadWriteOnce

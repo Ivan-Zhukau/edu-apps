@@ -24,3 +24,7 @@ hs_err_pid*
 /edu-project.iml
 /modern-java.log
 /.idea/
+
+# helm installation artifacts
+edu-k8s/k8s-for-java-dev/k8s-helm-version/k8s-java-dev/Chart.lock
+edu-k8s/k8s-for-java-dev/k8s-helm-version/k8s-java-dev/charts/*

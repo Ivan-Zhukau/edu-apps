@@ -1,0 +1,29 @@
+# NOTE: working directory is a directory that contains all chart folders
+
+# build dependencies before install
+helm dependencies build ./k8s-java-dev
+
+# install cluster
+helm install k8s-java-dev ./k8s-java-dev
+
+# check the result of installation
+kubectl get all -n k7s-java-dev
+
+# install cluster with override of default values
+helm install -f non-default-values.yaml k8s-java-dev ./k8s-java-dev/
+
+# check the result of installation w/o default values
+kubectl get all -n k8s
+
+# delete cluster
+helm uninstall k8s-java-dev --debug
+
+# -------
+# Optional commands
+# -------
+
+# how to review what was deployed into cluster
+helm get all k8s-java-dev
+
+# update readme.md files for charts
+helm-docs --sort-values-order=file --template-files=README.md.gotmpl

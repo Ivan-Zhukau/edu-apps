@@ -1,0 +1,12 @@
+global:
+  namespace: k8s
+
+songs-app:
+  songs:
+    deployment:
+      replicas: 1
+
+resources-app: 
+  resources:
+    deployment:
+      replicas: 3

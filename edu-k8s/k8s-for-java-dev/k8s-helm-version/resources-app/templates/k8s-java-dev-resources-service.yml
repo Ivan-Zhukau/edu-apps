@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-back-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    nodePort: 31080
+  selector:
+    app: resources-back
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resources-back-deployment
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.resources.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: resources-back
+  template:
+    metadata:
+      name: resources-back
+      labels:
+        app: resources-back
+    spec:
+      containers:
+      - name: microservice-intro-resource-service
+        image: microservice-intro-resource-service
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: http
+            containerPort: 8080
+        env:
+          - name: RESOURCES_DB_URL
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-resources-config
+                key: resources.RESOURCES_DB_URL
+          - name: RESOURCES_DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-resources-config
+                key: resources.RESOURCES_DB_PORT
+          - name: SONGS_MS_URL
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-resources-config
+                key: resources.SONGS_MS_URL
+          - name: SONGS_MS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-resources-config
+                key: resources.SONGS_MS_PORT
+        startupProbe:
+          httpGet:
+            path: /resources-ms/health
+            port: http
+          failureThreshold: 29
+          periodSeconds: 9
+        livenessProbe:
+          httpGet:
+            path: /resources-ms/health
+            port: http
+          initialDelaySeconds: 14
+          periodSeconds: 14
+        readinessProbe:
+          httpGet:
+            path: /resources-ms/health
+            port: http
+          initialDelaySeconds: 14
+          periodSeconds: 14

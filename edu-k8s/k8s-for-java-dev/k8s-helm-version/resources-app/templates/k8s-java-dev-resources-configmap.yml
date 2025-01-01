@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-java-dev-resources-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  resources.RESOURCES_DB_URL: resources-service-db-postgres-service.k8s-java-dev.svc.cluster.local
+  resources.SONGS_MS_URL: songs-back-service.k8s-java-dev.svc.cluster.local
+  resources.SONGS_MS_PORT: "80"
+  resources.RESOURCES_DB_PORT: "5432"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resources-service-db-init-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  init.sql: |
+    CREATE SEQUENCE IF NOT EXISTS resource_table_seq START WITH 1 INCREMENT BY 1 ;
+
+    CREATE TABLE resource_table
+    (
+       id SERIAL PRIMARY KEY,
+       data BYTEA
+    );
+
