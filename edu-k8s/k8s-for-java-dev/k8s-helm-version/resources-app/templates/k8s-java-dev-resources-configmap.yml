@@ -8,6 +8,7 @@ data:
   resources.SONGS_MS_URL: songs-back-service.k8s-java-dev.svc.cluster.local
   resources.SONGS_MS_PORT: "80"
   resources.RESOURCES_DB_PORT: "5432"
+  {{- include "k8s-java-dev.labels" . | nindent 2 }}  
 ---
 apiVersion: v1
 kind: ConfigMap

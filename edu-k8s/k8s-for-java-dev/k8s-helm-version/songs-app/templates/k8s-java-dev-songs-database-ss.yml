@@ -40,7 +40,7 @@ spec:
         env:
         - name: POSTGRES_PASSWORD
           valueFrom:
-            secretKey:
+            secretKeyRef:
               name: k8s-java-dev-songs-secrets
               key: songs.SONG_DB_PASS
         - name: POSTGRES_USER
