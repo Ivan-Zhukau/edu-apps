@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: songs-back-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app: songs-back
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: songs-back-deployment
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: songs-back
+spec:
+  replicas: {{ .Values.songs.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: songs-back
+  template:
+    metadata:
+      namespace: {{ .Values.global.namespace }}
+      labels:
+        app: songs-back
+    spec:
+      containers:
+        - name: microservice-intro-song-service
+          image: microservice-intro-song-service:1.0
+          imagePullPolicy: IfNotPresent
+          args: ["java", "-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "app.jar"]
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: java-debug
+              containerPort: 5005
+          env:
+          - name: SONGS_DB_URL
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-songs-config
+                key: songs.SONGS_DB_URL
+          - name: SONGS_MS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: k8s-java-dev-songs-config
+                key: songs.SONGS_MS_PORT
+          startupProbe:
+            httpGet:
+              path: /songs-ms/health
+              port: http
+            failureThreshold: 29
+            periodSeconds: 9
+          livenessProbe:
+            httpGet:
+              path: /songs-ms/health
+              port: http
+            initialDelaySeconds: 14
+            periodSeconds: 14
+          readinessProbe:
+            httpGet:
+              path: /songs-ms/health
+              port: http
+            initialDelaySeconds: 14
+            periodSeconds: 14

@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-java-dev-forward-ingress
+  namespace: k8s-java-dev
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: k8s.test.example
+      http:
+        paths:
+          - path: /songs-ms/
+            pathType: Prefix
+            backend:
+              service:
+                name: songs-back-service
+                port:
+                  number: 80
+          - path: /resources-ms/
+            pathType: Prefix
+            backend:
+              service:
+                name: resources-back-service
+                port:
+                  number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-java-dev-rewrite-ingress
+  namespace: k8s-java-dev
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /songs-ms/$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: k8s.test.example
+      http:
+        paths:
+          - path: /old-api/songs-ms(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: songs-back-service
+                port:
+                    number: 80
