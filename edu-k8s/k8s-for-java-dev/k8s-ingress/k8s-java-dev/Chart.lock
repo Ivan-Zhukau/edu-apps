@@ -1,9 +1,0 @@
-dependencies:
-- name: songs-app
-  repository: file://../songs-app
-  version: 0.1.0
-- name: resources-app
-  repository: file://../resources-app
-  version: 0.1.0
-digest: sha256:b1d4060d48c92a9da242e9cfceafa911714ea7c5b0ecb31b1fa7550b4ed21e3d
-generated: "2025-01-01T21:43:31.642346779+03:00"

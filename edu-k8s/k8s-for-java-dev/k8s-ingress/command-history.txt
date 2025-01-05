@@ -1,0 +1,24 @@
+#Minikube ingress guide
+https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+
+#Build helm dependencies
+helm dependencies build k8s-java-dev/
+
+#Generate README
+helm-docs --sort-values-order=file --template-files=README.md.gotmpl
+
+#Get Ingress Controller Resources
+kubectl get all -n ingress-nginx
+
+#Get ingress resources
+kubectl get ingress -n k8s-java-dev
+
+#Ingress Rewrite guide
+https://kubernetes.github.io/ingress-nginx/examples/rewrite/#rewrite-target
+
+
+#Test connection to the songs-ms application
+curl --resolve "k8s.test.example:80:$( minikube ip )" -i http://k8s.test.example:80/songs-ms/health
+
+#Test rewrite rule for obsolete url
+curl --resolve "k8s.test.example:80:$( minikube ip )" -i http://k8s.test.example:80/old-api/songs-ms/health

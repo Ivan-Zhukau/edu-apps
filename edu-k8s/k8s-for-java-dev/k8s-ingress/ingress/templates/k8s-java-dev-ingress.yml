@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: k8s-java-dev-forward-ingress
-  namespace: k8s-java-dev
+  namespace: {{ .Values.global.namespace }}
 spec:
   ingressClassName: nginx
   rules:
@@ -29,7 +29,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: k8s-java-dev-rewrite-ingress
-  namespace: k8s-java-dev
+  namespace: {{ .Values.global.namespace }}
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /songs-ms/$2
